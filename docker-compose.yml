@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+
+  postgres:
+    image: postgres:14.2
+    restart: always
+    env_file:
+      - variables.env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432"
+
+  application:
+    build:
+      context: .
+      dockerfile: ./docker/application/Dockerfile
+    restart: always
+    env_file:
+      - variables.env
+    volumes:
+      - ./src/:/code/
+    links:
+      - postgres
+    ports:
+      - "8888:80"
+    command: tail -f /dev/null
+
+
+volumes:
+  pg_data: {}
+  static_files: {}
+
