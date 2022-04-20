@@ -15,21 +15,19 @@ def query_alphavantage(function: str, params: dict):
     return response.json()
 
 
-def refresh_currency_exchange_rate(from_currency, to_currency):
-    function = 'CURRENCY_EXCHANGE_RATE'
-    params = {'from_currency': from_currency, 'to_currency': to_currency}
-
-    query_response = query_alphavantage(function=function, params=params)
+def get_currency_exchange_rate(from_currency, to_currency):
+    query_response = query_alphavantage(
+        function='CURRENCY_EXCHANGE_RATE',
+        params={
+            'from_currency': from_currency,
+            'to_currency': to_currency
+        }
+    )
     rate = query_response['Realtime Currency Exchange Rate']
-
-    exchange_rate = CurrencyExchangeRate(
+    return dict(
         from_code=rate.get("1. From_Currency Code"),
         to_code=rate.get("3. To_Currency Code"),
         exchange_rate=rate.get("5. Exchange Rate"),
         bid_price=rate.get("8. Bid Price"),
         ask_price=rate.get("9. Ask Price")
     )
-    exchange_rate.save()
-
-    return exchange_rate
-
