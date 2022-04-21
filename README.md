@@ -59,7 +59,7 @@ connect to `application` container and run:
 $ python manage.py init_celery_beat
 ```
 
-This will schedule `core.tasks.refresh_currency_exchange_rate_task` 
+This will schedule `core.tasks.get_refreshed_currency_exchange_rates_task` 
 to be executed every hour.
 
 If you need to add new periodic tasks, or you need to update 

@@ -26,7 +26,7 @@ def query_alphavantage(function, params):
     return response.json()
 
 
-def get_currency_exchange_rate(from_currency, to_currency):
+def get_currency_exchange_rate_alphavantage(from_currency, to_currency):
     """
     Gets a pair of currency codes, and fetches exchange rates data
     from AlphaVantage API for current pair. Prepares a dict of exchange
@@ -56,7 +56,14 @@ def get_currency_exchange_rate(from_currency, to_currency):
     )
 
 
-def refresh_currency_exchange_rate(from_currency, to_currency):
+def get_currency_exchange_rate(from_currency, to_currency):
+    return CurrencyExchangeRate.objects.filter(
+        from_code=from_currency,
+        to_code=to_currency,
+    ).last()
+
+
+def get_refreshed_currency_exchange_rate(from_currency, to_currency):
     """
     Gets a pair of currency codes, gets data from AlphaVantage API,
     and creates a CurrencyExchangeRate record in database.
@@ -69,7 +76,7 @@ def refresh_currency_exchange_rate(from_currency, to_currency):
     Returns:
         CurrencyExchangeRate: an object with refreshed data
     """
-    exchange_rate_data = get_currency_exchange_rate(
+    exchange_rate_data = get_currency_exchange_rate_alphavantage(
         from_currency=from_currency,
         to_currency=to_currency
     )

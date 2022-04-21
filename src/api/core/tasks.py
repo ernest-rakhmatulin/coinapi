@@ -1,12 +1,12 @@
 from celery import shared_task
-from core.services.alphavantage import refresh_currency_exchange_rate
+from core.services.alphavantage import get_refreshed_currency_exchange_rate
 from django.conf import settings
 from core.models import CurrencyExchangeRate
 from django.utils import timezone
 
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 10})
-def refresh_currency_exchange_rate_task(self):
+def get_refreshed_currency_exchange_rates_task(self):
     """
     Updates the exchange rates for all tracked
     currency pairs listed in settings.CURRENCY_PAIRS
@@ -14,7 +14,7 @@ def refresh_currency_exchange_rate_task(self):
 
     for from_currency, to_currency in settings.CURRENCY_PAIRS:
 
-        # We check for a pair record with refresh_time greater than certain time,
+        # Checks if pair record with refresh_time greater than certain time,
         # to make sure we don't fetch data that already has an actual record.
         rate_is_fresh = CurrencyExchangeRate.objects.filter(
             from_code=from_currency,
@@ -24,7 +24,9 @@ def refresh_currency_exchange_rate_task(self):
 
         # refreshing the rate if fresh rate doesn't exist
         if not rate_is_fresh:
-            refresh_currency_exchange_rate(
+            get_refreshed_currency_exchange_rate(
                 from_currency=from_currency,
                 to_currency=to_currency
             )
+
+

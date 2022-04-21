@@ -13,7 +13,7 @@ class Command(BaseCommand):
 
         periodic_task = PeriodicTask(
             name='Refresh Currency Exchange Rate',
-            task='core.tasks.refresh_currency_exchange_rate_task',
+            task='core.tasks.get_refreshed_currency_exchange_rates_task',
             crontab=every_hour_cron,
         )
         periodic_task.save()
