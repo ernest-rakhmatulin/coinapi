@@ -4,7 +4,7 @@ from django.conf import settings
 from core.models import CurrencyExchangeRate
 
 
-def query_alphavantage(function: str, params: dict):
+def query_alphavantage(function: str, params: dict) -> dict:
     url = 'https://www.alphavantage.co/query'
     query_params = {
         'function': function,
@@ -15,7 +15,7 @@ def query_alphavantage(function: str, params: dict):
     return response.json()
 
 
-def get_currency_exchange_rate(from_currency, to_currency):
+def get_currency_exchange_rate(from_currency: str, to_currency: str) -> dict:
     query_response = query_alphavantage(
         function='CURRENCY_EXCHANGE_RATE',
         params={
@@ -31,3 +31,13 @@ def get_currency_exchange_rate(from_currency, to_currency):
         bid_price=rate.get("8. Bid Price"),
         ask_price=rate.get("9. Ask Price")
     )
+
+
+def refresh_currency_exchange_rate(from_currency: str, to_currency: str):
+    exchange_rate_data = get_currency_exchange_rate(
+        from_currency=from_currency,
+        to_currency=to_currency
+    )
+    exchange_rate = CurrencyExchangeRate(**exchange_rate_data)
+    exchange_rate.save()
+    return exchange_rate
