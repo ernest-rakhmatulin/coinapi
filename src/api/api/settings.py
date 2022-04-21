@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 
+from core.choices import CurrencyCodeChoices
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'django_celery_beat',
+    'django_celery_results',
 
     'core',
 ]
@@ -133,8 +136,9 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
 
 # Core application related settings
+
 CURRENCY_PAIRS = (
-    ('BTC', 'USD'),
+    (CurrencyCodeChoices.BTC, CurrencyCodeChoices.USD),
 )
 
 REFRESH_RATE_HOURS = 1
