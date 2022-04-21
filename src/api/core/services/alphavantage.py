@@ -4,7 +4,18 @@ from django.conf import settings
 from core.models import CurrencyExchangeRate
 
 
-def query_alphavantage(function: str, params: dict) -> dict:
+def query_alphavantage(function, params):
+    """
+    Gets function name, and query parameters, and returns a dict
+    with data from AlphaVantage API
+
+    Args:
+        function (str): AlphaVantage API function name
+        params (dict): query parameters
+
+    Returns:
+        dict: API response based dict
+    """
     url = 'https://www.alphavantage.co/query'
     query_params = {
         'function': function,
@@ -15,7 +26,19 @@ def query_alphavantage(function: str, params: dict) -> dict:
     return response.json()
 
 
-def get_currency_exchange_rate(from_currency: str, to_currency: str) -> dict:
+def get_currency_exchange_rate(from_currency, to_currency):
+    """
+    Gets a pair of currency codes, and fetches exchange rates data
+    from AlphaVantage API for current pair. Prepares a dict of exchange
+    rates data for CurrencyExchangeRate model, and returns it.
+
+    Args:
+        from_currency (str): Currency code "from"
+        to_currency (str): Currency code "to"
+
+    Returns:
+        dict: a dict with data prepared for CurrencyExchangeRate model
+    """
     query_response = query_alphavantage(
         function='CURRENCY_EXCHANGE_RATE',
         params={
@@ -33,7 +56,19 @@ def get_currency_exchange_rate(from_currency: str, to_currency: str) -> dict:
     )
 
 
-def refresh_currency_exchange_rate(from_currency: str, to_currency: str):
+def refresh_currency_exchange_rate(from_currency, to_currency):
+    """
+    Gets a pair of currency codes, gets data from AlphaVantage API,
+    and creates a CurrencyExchangeRate record in database.
+    Returns CurrencyExchangeRate object.
+
+    Args:
+        from_currency (str): Currency code "from"
+        to_currency (str): Currency code "to"
+
+    Returns:
+        CurrencyExchangeRate: an object with refreshed data
+    """
     exchange_rate_data = get_currency_exchange_rate(
         from_currency=from_currency,
         to_currency=to_currency

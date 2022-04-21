@@ -122,3 +122,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Core application related settings
+CURRENCY_PAIRS = (
+    ('BTC', 'USD'),
+)
+
+REFRESH_RATE_HOURS = 1
