@@ -34,8 +34,7 @@ services:
       - "8888:80"
     command: tail -f /dev/null
 
-
-  worker:
+  celery_worker:
     build:
       context: .
       dockerfile: ./docker/application/Dockerfile
@@ -50,6 +49,20 @@ services:
       - redis
     command: celery -A api worker -l INFO
 
+  celery_beat:
+    build:
+      context: .
+      dockerfile: ./docker/application/Dockerfile
+    restart: always
+    working_dir: /code/api/
+    env_file:
+      - variables.env
+    volumes:
+      - ./src/:/code/
+    links:
+      - postgres
+      - redis
+    command: celery -A api beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
 
 volumes:
   pg_data: {}
