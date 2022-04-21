@@ -12,6 +12,12 @@ services:
     ports:
       - "5432"
 
+  redis:
+    image: redis:6.2
+    restart: always
+    ports:
+      - "6379"
+
   application:
     build:
       context: .
@@ -23,9 +29,26 @@ services:
       - ./src/:/code/
     links:
       - postgres
+      - redis
     ports:
       - "8888:80"
     command: tail -f /dev/null
+
+
+  worker:
+    build:
+      context: .
+      dockerfile: ./docker/application/Dockerfile
+    restart: always
+    working_dir: /code/api/
+    env_file:
+      - variables.env
+    volumes:
+      - ./src/:/code/
+    links:
+      - postgres
+      - redis
+    command: celery -A api worker -l INFO
 
 
 volumes:
