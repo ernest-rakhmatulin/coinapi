@@ -17,6 +17,7 @@ def query_alphavantage(function, params):
     Returns:
         dict: API response based dict
     """
+
     url = 'https://www.alphavantage.co/query'
     query_params = {
         'function': function,
@@ -30,7 +31,7 @@ def query_alphavantage(function, params):
     rate_limit_note = result.get('Note')
     if rate_limit_note:
         raise APIException('Alpha Vantage API rate limit. Wait for a minute, '
-                           'or try GET request, to get latest updated rate.')
+                           'or try GET request, to get latest available rate.')
 
     return response.json()
 
@@ -48,6 +49,7 @@ def get_currency_exchange_rate_alphavantage(from_currency, to_currency):
     Returns:
         dict: a dict with data prepared for CurrencyExchangeRate model
     """
+
     query_response = query_alphavantage(
         function='CURRENCY_EXCHANGE_RATE',
         params={
@@ -77,6 +79,7 @@ def get_currency_exchange_rate(from_currency, to_currency):
     Returns:
         CurrencyExchangeRate: last object with refreshed data
     """
+
     return CurrencyExchangeRate.objects.filter(
         from_code=from_currency,
         to_code=to_currency,
