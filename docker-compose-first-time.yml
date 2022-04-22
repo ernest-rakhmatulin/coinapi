@@ -8,6 +8,8 @@ services:
       dockerfile: ./docker/application/Dockerfile
     env_file:
       - variables.env
+    volumes:
+      - static_files:/code/api/static
     depends_on:
       - postgres
     command: bash -c "python manage.py collectstatic --noinput && 

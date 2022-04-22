@@ -123,7 +123,6 @@ USE_TZ = True
 
 STATIC_URL = os.environ.get('STATIC_URL')
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATIC_HOST_URL = os.environ.get('STATIC_HOST_URL')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
