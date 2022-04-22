@@ -7,10 +7,6 @@ services:
     restart: always
     env_file:
       - variables.env
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-    ports:
-      - "5432"
 
   redis:
     image: redis:6.2
@@ -26,13 +22,10 @@ services:
     env_file:
       - variables.env
     volumes:
-#      - ./src/:/code/
       - static_files:/code/api/static
     depends_on:
       - postgres
       - redis
-#    ports:
-#      - "8888:80"
 
 
   celery_worker:
