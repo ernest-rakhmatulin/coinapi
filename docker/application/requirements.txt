@@ -12,7 +12,6 @@ click-repl==0.2.0
 Deprecated==1.2.13
 Django==3.2.13
 django-celery-beat==2.2.1
-django-celery-results==2.3.1
 django-timezone-field==4.2.3
 djangorestframework==3.13.1
 idna==3.3
