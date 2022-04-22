@@ -26,25 +26,23 @@ services:
     env_file:
       - variables.env
     volumes:
-      - ./src/:/code/
-    links:
+#      - ./src/:/code/
+      - static_files:/code/api/static
+    depends_on:
       - postgres
       - redis
-    ports:
-      - "8888:80"
-    command: tail -f /dev/null
+#    ports:
+#      - "8888:80"
+
 
   celery_worker:
     build:
       context: .
       dockerfile: ./docker/application/Dockerfile
     restart: always
-    working_dir: /code/api/
     env_file:
       - variables.env
-    volumes:
-      - ./src/:/code/
-    links:
+    depends_on:
       - postgres
       - redis
     command: celery -A api worker -l INFO
@@ -54,15 +52,24 @@ services:
       context: .
       dockerfile: ./docker/application/Dockerfile
     restart: always
-    working_dir: /code/api/
     env_file:
       - variables.env
-    volumes:
-      - ./src/:/code/
-    links:
+    depends_on:
       - postgres
       - redis
     command: celery -A api beat -l INFO --scheduler django_celery_beat.schedulers:DatabaseScheduler
+
+  nginx:
+    restart: always
+    depends_on:
+      - application
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - static_files:/opt/static
 
 volumes:
   pg_data: {}

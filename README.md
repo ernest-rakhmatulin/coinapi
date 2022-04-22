@@ -20,13 +20,32 @@ $ cd coinapi
 
 ### Run containers:
 
+#### First run 
+
+We have two docker-compose files:
+- `docker-compose.yml`
+- `docker-compose-first-time.yml`
+
+You may need `docker-compose-first-time.yml` only for the first run. It will 
+trigger build, static collection, migrations. It will also initiate scheduler.  
+
+```sh
+$ docker-compose -f docker-compose.yml -f docker-compose-first-time.yml up
+```
+
+Done! Everything is up and running! [http://localhost/](http://localhost/)
+
+#### Regular run 
+
+Regular runs doesn't require `docker-compose-first-time.yml`. To run the application: 
+
 ```sh
 $ docker-compose up
 ```
 
-### Apply database migrations
+### Database migrations
 
-Connect to `application` container:
+To apply migratiosn connect to `application` container:
 
 ```sh
 $ docker-compose exec application bash
@@ -38,7 +57,7 @@ Being connected to `application` container run migrations:
 $ python manage.py migrate
 ```
 
-### Create a superuser 
+### Superuser 
 
 Being connected to `application` container run the 
 command and follow the instructions.  

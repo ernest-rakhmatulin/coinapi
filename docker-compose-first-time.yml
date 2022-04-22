@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+
+  first_time_container:
+    build:
+      context: .
+      dockerfile: ./docker/application/Dockerfile
+    env_file:
+      - variables.env
+    depends_on:
+      - postgres
+    command: bash -c "python manage.py collectstatic --noinput && 
+      python manage.py migrate &&
+      python manage.py init_celery_beat"
