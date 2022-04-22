@@ -1,5 +1,6 @@
 import requests
 from django.conf import settings
+from rest_framework.exceptions import APIException
 
 from core.models import CurrencyExchangeRate
 
@@ -23,6 +24,14 @@ def query_alphavantage(function, params):
         **params
     }
     response = requests.get(url, params=query_params)
+    result = response.json()
+
+    # Alpha Vantage API returns a 'Note' when it reaches the limit.
+    rate_limit_note = result.get('Note')
+    if rate_limit_note:
+        raise APIException('Alpha Vantage API rate limit. Wait for a minute, '
+                           'or try GET request, to get latest updated rate.')
+
     return response.json()
 
 
@@ -57,6 +66,17 @@ def get_currency_exchange_rate_alphavantage(from_currency, to_currency):
 
 
 def get_currency_exchange_rate(from_currency, to_currency):
+    """
+    Gets a pair of currency codes, and returns latest
+    CurrencyExchangeRate object from the database.
+
+    Args:
+        from_currency (str): Currency code "from"
+        to_currency (str): Currency code "to"
+
+    Returns:
+        CurrencyExchangeRate: last object with refreshed data
+    """
     return CurrencyExchangeRate.objects.filter(
         from_code=from_currency,
         to_code=to_currency,
