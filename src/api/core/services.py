@@ -1,6 +1,6 @@
 import requests
 from django.conf import settings
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, Throttled
 
 from core.models import CurrencyExchangeRate
 
@@ -25,15 +25,39 @@ def query_alphavantage(function, params):
         **params
     }
     response = requests.get(url, params=query_params)
-    result = response.json()
-
-    # Alpha Vantage API returns a 'Note' when it reaches the limit.
-    rate_limit_note = result.get('Note')
-    if rate_limit_note:
-        raise APIException('Alpha Vantage API rate limit. Wait for a minute, '
-                           'or try GET request, to get latest available rate.')
-
     return response.json()
+
+
+def query_alphavantage_wrapper(function, params):
+    """
+    Gets function name, and query parameters, and returns a dict
+    with data from AlphaVantage API. Handles APIs notes and errors.
+
+    Args:
+        function (str): AlphaVantage API function name
+        params (dict): query parameters
+
+    Returns:
+        dict: API response based dict
+    """
+
+    alphavantage_data = query_alphavantage(function, params)
+
+    # Alpha Vantage API returns a 'Note' when it reaches
+    # the limit of API call per interval, and 'Error Message'
+    # if any sort of error happens.
+
+    if alphavantage_data.get('Note'):
+        raise Throttled(
+            detail='The limit of requests per minute to the data provider has been reached.'
+                   ' Wait for a minute, or try GET request, to get latest available rate.',
+        )
+    elif alphavantage_data.get('Error Message'):
+        raise APIException(
+            'Data provider API error. Please contact customer support.',
+        )
+
+    return alphavantage_data
 
 
 def get_currency_exchange_rate_alphavantage(from_currency, to_currency):
@@ -50,7 +74,7 @@ def get_currency_exchange_rate_alphavantage(from_currency, to_currency):
         dict: a dict with data prepared for CurrencyExchangeRate model
     """
 
-    query_response = query_alphavantage(
+    query_response = query_alphavantage_wrapper(
         function='CURRENCY_EXCHANGE_RATE',
         params={
             'from_currency': from_currency,
