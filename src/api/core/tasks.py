@@ -1,5 +1,5 @@
 from celery import shared_task
-from core.services.alphavantage import get_refreshed_currency_exchange_rate
+from core.services import get_refreshed_currency_exchange_rate
 from django.conf import settings
 from core.models import CurrencyExchangeRate
 from django.utils import timezone

@@ -1,4 +1,4 @@
-from core.services.alphavantage import get_currency_exchange_rate, get_refreshed_currency_exchange_rate
+from core.services import get_currency_exchange_rate, get_refreshed_currency_exchange_rate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from core.serializers import CurrencyExchangeRateSerializer

@@ -1,6 +1,7 @@
 from django.db import models
 from .choices import CurrencyCodeChoices
 
+
 class CurrencyExchangeRate(models.Model):
     from_code = models.CharField(max_length=3, choices=CurrencyCodeChoices.choices)
     to_code = models.CharField(max_length=3, choices=CurrencyCodeChoices.choices)
