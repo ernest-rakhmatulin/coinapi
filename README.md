@@ -14,8 +14,8 @@
 ### Clone the repository:
 
 ```sh
-$ git clone git@github.com:ernest-rakhmatulin/coinapi.git
-$ cd coinapi
+git clone git@github.com:ernest-rakhmatulin/coinapi.git
+cd coinapi
 ```
 
 ### Run containers:
@@ -30,17 +30,26 @@ You may need `docker-compose-first-time.yml` only for the first run. It will
 trigger build, static collection, migrations. It will also initiate scheduler.  
 
 ```sh
-$ docker-compose -f docker-compose.yml -f docker-compose-first-time.yml up
+docker-compose -f docker-compose.yml -f docker-compose-first-time.yml up
 ```
 
 Done! Everything is up and running! [http://localhost/](http://localhost/)
+
+In case of errors try:  
+
+```sh
+docker-compose down --remove-orphans --volumes
+docker-compose -f docker-compose.yml -f docker-compose-first-time.yml up
+```
+
+
 
 #### Regular run 
 
 Regular runs doesn't require `docker-compose-first-time.yml`. To run the application: 
 
 ```sh
-$ docker-compose up
+docker-compose up
 ```
 
 ### Database migrations
@@ -48,13 +57,13 @@ $ docker-compose up
 To apply migratiosn connect to `application` container:
 
 ```sh
-$ docker-compose exec application bash
+docker-compose exec application bash
 ```
 
 Being connected to `application` container run migrations:
 
 ```sh
-$ python manage.py migrate
+python manage.py migrate
 ```
 
 ### Superuser 
@@ -63,7 +72,7 @@ Being connected to `application` container run the
 command and follow the instructions.  
 
 ```sh
-$ python manage.py createsuperuser
+python manage.py createsuperuser
 ```
 
 ## Celery Beat setup
@@ -75,7 +84,7 @@ To schedule a task that will refresh currency rate once per hour
 connect to `application` container and run:
 
 ```sh
-$ python manage.py init_celery_beat
+python manage.py init_celery_beat
 ```
 
 This will schedule `core.tasks.get_refreshed_currency_exchange_rates_task` 
@@ -83,7 +92,7 @@ to be executed every hour.
 
 If you need to add new periodic tasks, or you need to update 
 the schedule, you can do it manually through Django admin 
-(/admin/django_celery_beat/).
+[http://localhost/admin/django_celery_beat/](http://localhost/admin/django_celery_beat/).
 
 
 
