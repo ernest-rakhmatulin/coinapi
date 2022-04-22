@@ -1,8 +1,9 @@
 from celery import shared_task
-from core.services import get_refreshed_currency_exchange_rate
 from django.conf import settings
-from core.models import CurrencyExchangeRate
 from django.utils import timezone
+
+from core.models import CurrencyExchangeRate
+from core.services import get_refreshed_currency_exchange_rate
 
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 10})
@@ -28,5 +29,3 @@ def get_refreshed_currency_exchange_rates_task(self):
                 from_currency=from_currency,
                 to_currency=to_currency
             )
-
-
