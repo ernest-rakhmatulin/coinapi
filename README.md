@@ -1,16 +1,5 @@
 # CoinAPI
 
-## Docker and OS Setup
-
-1. Install the Docker Client
-  - OSX: https://www.docker.com/products/docker-desktop/#/mac
-  - Ubuntu
-    - docker: https://docs.docker.com/engine/install/ubuntu/
-    - docker-compose: https://docs.docker.com/compose/install/
-  - Windows: https://www.docker.com/products/docker-desktop/#/windows
-
-## CoinAPI Setup
-
 ### Clone the repository:
 
 ```sh
@@ -43,56 +32,148 @@ docker-compose -f docker-compose.yml -f docker-compose-first-time.yml up
 ```
 
 
-
 #### Regular run 
 
 Regular runs doesn't require `docker-compose-first-time.yml`. To run the application: 
 
 ```sh
+docker-compose up -f docker-compose.yml
+```
+
+or: 
+
+```sh
 docker-compose up
 ```
 
-### Database migrations
+_________________________________________________________________________________
 
-To apply migratiosn connect to `application` container:
 
-```sh
-docker-compose exec application bash
-```
+# Backend Task
 
-Being connected to `application` container run migrations:
+### Write an API using Django that fetches the price of BTC/USD from the alphavantage API every hour, and stores it on postgres. 
+_________________________________________________________________________________
 
-```sh
-python manage.py migrate
-```
+To implement this feature I used **Celery** + **Celery Beat**.
 
-### Superuser 
+`core.tasks.get_refreshed_currency_exchange_rates_task`
 
-Being connected to `application` container run the 
-command and follow the instructions.  
+The task iterates through all currency pairs listed in `settings.CURRENCY_PAIRS`
+only (BTC-USD now) and refreshes values. If task fails because of an exception 
+it is restarted 5 times `max_retries=5`. 
 
-```sh
-python manage.py createsuperuser
-```
+Restarted task checks currency pair's `refresh_time`, and skip refreshed currency pairs.    
+_________________________________________________________________________________
 
-## Celery Beat setup
-
-Celery beat is a scheduler. It kicks off tasks at regular intervals, 
-that are then executed by available Celery worker nodes.
-
-To schedule a task that will refresh currency rate once per hour 
-connect to `application` container and run:
+Scheduling can be done via Django admin, or via `manage.py init_celery_beat`.
 
 ```sh
 python manage.py init_celery_beat
 ```
 
-This will schedule `core.tasks.get_refreshed_currency_exchange_rates_task` 
-to be executed every hour.
+This will create an hour interval for Celery Beat, and schedule 
+`core.tasks.get_refreshed_currency_exchange_rates_task` to be executed once per interval.
 
-If you need to add new periodic tasks, or you need to update 
-the schedule, you can do it manually through Django admin 
-[http://localhost/admin/django_celery_beat/](http://localhost/admin/django_celery_beat/).
+###This API must be secured which means that you will need an API key to use it. 
+
+To make all urls secured I added `DEFAULT_PERMISSION_CLASSES` and 
+`DEFAULT_AUTHENTICATION_CLASSES`.
+
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+    ...
+}
+```
+
+### Endpoint's versioning 
+
+There should be two endpoints: 
+
+GET /api/v1/quotes - returns exchange rate 
+POST /api/v1/quotes - triggers force requesting the prices from alphavantage. 
 
 
+According to urls it was required to add the support of versioning. 
+I've used `rest_framework.versioning.NamespaceVersioning`, because it allows 
+supporting of requested urls' style: `/api/v1/<resource>`.
+
+```python
+REST_FRAMEWORK = {
+    ...
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    'DEFAULT_VERSION': 'v1',
+    'ALLOWED_VERSIONS': ('v1',),
+    'VERSION_PARAM': 'version'
+}
+```
+_________________________________________________________________________________
+
+The view `core.views.CurrencyExchangeRateView` supports versioning. It selects a serializer
+based on request url.
+
+```python
+def get_serializer_class(self):
+    if self.request.version == 'v1':
+        return CurrencyExchangeRateSerializerV1
+```
+_________________________________________________________________________________
+
+Versioning is also supported by tests. 
+
+```python
+error_response = self.client.post(reverse('v1:currency-exchange-rate'))
+```
+
+### The API & DB should be containerized using Docker as well. The technologies to be used: Celery, Redis or RabbitMQ, Docker and Docker Compose. 
+
+All dependencies are containerized. We have `nginx`, `postgres`, `redis`, `application`,
+`celery_worker`, `celery_beat` containers. Last 3 uses same image.
+
+#### Every part should be implemented as simple as possible.
+To make it as simple as possible I moved all possible settings to `settings.REST_FRAMEWORK`.
+All containers use default images from hub, or single custom build image.
+
+#### The project should be committed to GitHub. 
+https://github.com/ernest-rakhmatulin/coinapi
+
+#### The sensitive data such as alphavantage API key, should be passed from the .env
+All variables moved to `variables.env`. These variables are shared between all containers.
+
+```sh
+POSTGRES_USER=coin-project-user
+POSTGRES_PASSWORD=QHwM~7dfusDDk
+POSTGRES_DB=coin-project-db
+POSTGRES_HOST=postgres
+
+CELERY_BROKER_URL=redis://redis:6379
+CELERY_RESULT_BACKEND=redis://redis:6379
+
+SECRET_KEY=jWnZr4u7x!z%C*F-JaNdRgUkXp2s5v8y/B?DJaNdRgUkXp2s5v8y/B?D
+ALPHA_VANTAGE_API_KEY=VPO8KG64PZW9TZ33
+
+STATIC_URL=/static/
+```
+
+Variables are used via `os.environ` like this:
+
+```python
+...
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('POSTGRES_DB'),
+        'USER': os.environ.get('POSTGRES_USER'),
+        'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
+        'HOST': os.environ.get('POSTGRES_HOST'),
+        'PORT': '',
+    }
+}
+...
+```
 
