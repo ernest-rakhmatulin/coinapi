@@ -22,7 +22,7 @@ class CurrencyExchangeRateViewTest(APITestCase):
         self.auth_header = f"Basic {token}"
 
     def test_unauthorized(self):
-        response = self.client.get(reverse('currency-exchange-rate'))
+        response = self.client.get(reverse('v1:currency-exchange-rate'))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_post_request(self):
@@ -62,7 +62,7 @@ class CurrencyExchangeRateViewTest(APITestCase):
                 alphavantage_note_response
             ]
 
-            success_response = self.client.post(reverse('currency-exchange-rate'))
+            success_response = self.client.post(reverse('v1:currency-exchange-rate'))
             self.assertEqual(
                 success_response.json().get('exchange_rate'),
                 alphavantage_ok_response['Realtime Currency Exchange Rate']['5. Exchange Rate']
@@ -72,7 +72,7 @@ class CurrencyExchangeRateViewTest(APITestCase):
                 status.HTTP_200_OK
             )
 
-            error_response = self.client.post(reverse('currency-exchange-rate'))
+            error_response = self.client.post(reverse('v1:currency-exchange-rate'))
             self.assertEqual(
                 'Data provider API error. Please contact customer support.',
                 error_response.json()['detail']
@@ -82,7 +82,7 @@ class CurrencyExchangeRateViewTest(APITestCase):
                 status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-            note_response = self.client.post(reverse('currency-exchange-rate'))
+            note_response = self.client.post(reverse('v1:currency-exchange-rate'))
             self.assertEqual(
                 'The limit of requests per minute to the data provider has been reached. '
                 'Wait for a minute, or try GET request, to get latest available rate.',
@@ -95,7 +95,7 @@ class CurrencyExchangeRateViewTest(APITestCase):
 
     def test_get_request(self):
         self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
-        response = self.client.get(reverse('currency-exchange-rate'))
+        response = self.client.get(reverse('v1:currency-exchange-rate'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 

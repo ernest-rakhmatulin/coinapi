@@ -3,7 +3,7 @@ from rest_framework import serializers
 from core.models import CurrencyExchangeRate
 
 
-class CurrencyExchangeRateSerializer(serializers.ModelSerializer):
+class CurrencyExchangeRateSerializerV1(serializers.ModelSerializer):
     class Meta:
         model = CurrencyExchangeRate
         fields = [
