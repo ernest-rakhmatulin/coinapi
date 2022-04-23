@@ -2,12 +2,16 @@ import base64
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
+from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from core.models import CurrencyExchangeRate
+from core.tasks import get_refreshed_currency_exchange_rates_task
 
-class CreateUserTest(APITestCase):
+
+class CurrencyExchangeRateViewTest(APITestCase):
 
     def setUp(self):
         username = 'johndoe'
@@ -93,3 +97,63 @@ class CreateUserTest(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=self.auth_header)
         response = self.client.get(reverse('currency-exchange-rate'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TasksTestCase(TestCase):
+
+    def test_get_refreshed_currency_exchange_rates_task_create(self):
+        with patch("core.services.query_alphavantage") as currency_rate:
+            currency_rate.return_value = {
+                "Realtime Currency Exchange Rate": {
+                    "1. From_Currency Code": "BTC",
+                    "2. From_Currency Name": "Bitcoin",
+                    "3. To_Currency Code": "USD",
+                    "4. To_Currency Name": "United States Dollar",
+                    "5. Exchange Rate": "39445.08000000",
+                    "6. Last Refreshed": "2022-04-22 20:27:01",
+                    "7. Time Zone": "UTC",
+                    "8. Bid Price": "39445.08000000",
+                    "9. Ask Price": "39445.09000000"
+                }
+            }
+            get_refreshed_currency_exchange_rates_task()
+            self.assertEqual(
+                CurrencyExchangeRate.objects.count(), 1,
+                'New object must be created.'
+            )
+
+    def test_get_refreshed_currency_exchange_rates_task_skip(self):
+        # Creating an object, that is fresh enough to skip refreshing
+        CurrencyExchangeRate.objects.create(
+            from_code="BTC",
+            to_code="USD",
+            exchange_rate=39445.08000000,
+            bid_price=39445.08000000,
+            ask_price=39445.09000000,
+        )
+
+        with patch("core.services.query_alphavantage") as currency_rate:
+            currency_rate.return_value = {
+                "Realtime Currency Exchange Rate": {
+                    "1. From_Currency Code": "BTC",
+                    "2. From_Currency Name": "Bitcoin",
+                    "3. To_Currency Code": "USD",
+                    "4. To_Currency Name": "United States Dollar",
+                    "5. Exchange Rate": "39445.08000000",
+                    "6. Last Refreshed": "2022-04-22 20:27:01",
+                    "7. Time Zone": "UTC",
+                    "8. Bid Price": "39445.08000000",
+                    "9. Ask Price": "39445.09000000"
+                }
+            }
+            self.assertEqual(
+                CurrencyExchangeRate.objects.count(), 1,
+                'Fresh object should already exist.'
+            )
+
+            get_refreshed_currency_exchange_rates_task()
+
+            self.assertEqual(
+                CurrencyExchangeRate.objects.count(), 1,
+                'Object should not be created, as we already have a fresh object.'
+            )

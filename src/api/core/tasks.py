@@ -6,8 +6,8 @@ from core.models import CurrencyExchangeRate
 from core.services import get_refreshed_currency_exchange_rate
 
 
-@shared_task(bind=True, autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 10})
-def get_refreshed_currency_exchange_rates_task(self):
+@shared_task(autoretry_for=(Exception,), retry_kwargs={'max_retries': 5, 'countdown': 10})
+def get_refreshed_currency_exchange_rates_task():
     """
     Updates the exchange rates for all tracked
     currency pairs listed in settings.CURRENCY_PAIRS
