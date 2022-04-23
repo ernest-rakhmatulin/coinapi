@@ -54,6 +54,14 @@ or:
 docker-compose up
 ```
 
+#### Clean up after run
+
+To remove containers, volumes and images run:
+
+```sh
+docker-compose down --remove-orphans --volumes --rmi all 
+```
+
 _________________________________________________________________________________
 
 
