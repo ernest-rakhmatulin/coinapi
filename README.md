@@ -15,14 +15,22 @@ We have two docker-compose files:
 - `docker-compose.yml`
 - `docker-compose-first-time.yml`
 
-You may need `docker-compose-first-time.yml` only for the first run. It will 
-trigger build, static collection, migrations. It will also initiate scheduler.  
+You may need `docker-compose-first-time.yml` only for the first run.  
 
 ```sh
 docker-compose -f docker-compose.yml -f docker-compose-first-time.yml up
 ```
 
 Done! Everything is up and running! [http://localhost/](http://localhost/)
+
+It will trigger build, static collection, migrations. It will also initiate scheduler.
+But all this steps can be done manually if needed. 
+
+```sh
+python manage.py collectstatic --noinput && 
+python manage.py migrate &&
+python manage.py init_celery_beat
+```
 
 In case of errors try:  
 
@@ -100,7 +108,7 @@ POST /api/v1/quotes - triggers force requesting the prices from alphavantage.
 
 
 According to urls it was required to add the support of versioning. 
-I've used `rest_framework.versioning.NamespaceVersioning`, because it allows 
+I've used `rest_framework.versioning.NamespaceVersioning`, it allows 
 supporting of requested urls' style: `/api/v1/<resource>`.
 
 ```python
