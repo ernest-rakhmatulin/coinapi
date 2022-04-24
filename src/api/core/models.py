@@ -12,6 +12,9 @@ class CurrencyExchangeRate(models.Model):
     refresh_time = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        # This index makes sense if we have several currency pairs.
+        # If it is assumed that there will always be only one pair,
+        # it can be removed, since there is a primary key
         indexes = [
             models.Index(fields=['from_code', 'to_code']),
         ]
