@@ -65,6 +65,5 @@ services:
       - static_files:/opt/static
 
 volumes:
-  pg_data: {}
   static_files: {}
 
